@@ -1,0 +1,163 @@
+@startuml schema_relationnel
+!theme plain
+skinparam linetype ortho
+skinparam classFontSize 11
+skinparam classAttributeFontSize 9
+
+title Schéma Relationnel - Base de Données gestion_iut
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' TABLES
+' ============================================
+
+class users <<table>> {
+    <b>#id</b> : INT AUTO_INCREMENT
+    --
+    nom : VARCHAR(100) NOT NULL
+    prenom : VARCHAR(100) NOT NULL
+    email : VARCHAR(255) NOT NULL UNIQUE
+    password_hash : VARCHAR(255) NOT NULL
+    role : ENUM('admin','eleve','enseignant','technicien')
+    email_verifie : BOOLEAN DEFAULT 0
+    code_verification : VARCHAR(6) NULL
+    date_code_expiration : TIMESTAMP NULL
+    date_creation : TIMESTAMP DEFAULT NOW()
+    date_derniere_connexion : TIMESTAMP NULL
+    actif : BOOLEAN DEFAULT 1
+    --
+    <i>INDEX idx_email (email)</i>
+    <i>INDEX idx_role (role)</i>
+}
+
+class materiel <<table>> {
+    <b>#id</b> : INT AUTO_INCREMENT
+    --
+    nom : VARCHAR(255) NOT NULL
+    categorie : VARCHAR(100) NULL
+    etat : ENUM('en_stock','emprunte','en_maintenance')
+    localisation : VARCHAR(100) NULL
+    description : TEXT NULL
+    date_ajout : TIMESTAMP DEFAULT NOW()
+    date_mouvement : TIMESTAMP ON UPDATE NOW()
+    date_retour_prevue : DATE NULL
+    =>emprunteur_id : INT NULL
+    =>technicien_id : INT NULL
+    --
+    <i>INDEX idx_etat (etat)</i>
+    <i>INDEX idx_emprunteur (emprunteur_id)</i>
+    <i>INDEX idx_technicien (technicien_id)</i>
+}
+
+class emprunts <<table>> {
+    <b>#id</b> : INT AUTO_INCREMENT
+    --
+    =>materiel_id : INT NOT NULL
+    =>emprunteur_id : INT NOT NULL
+    date_emprunt : TIMESTAMP DEFAULT NOW()
+    date_retour_prevue : DATE NOT NULL
+    date_retour_effective : TIMESTAMP NULL
+    jours_retard : INT DEFAULT 0
+    commentaire : TEXT NULL
+    --
+    <i>INDEX idx_materiel (materiel_id)</i>
+    <i>INDEX idx_emprunteur (emprunteur_id)</i>
+    <i>INDEX idx_date_emprunt (date_emprunt)</i>
+    <i>INDEX idx_retard (jours_retard)</i>
+}
+
+class maintenances <<table>> {
+    <b>#id</b> : INT AUTO_INCREMENT
+    --
+    =>materiel_id : INT NOT NULL
+    =>technicien_id : INT NOT NULL
+    date_debut : TIMESTAMP DEFAULT NOW()
+    date_fin : TIMESTAMP NULL
+    deadline : DATE NOT NULL
+    composants_commandes : TEXT NULL
+    couts : DECIMAL(10,2) DEFAULT 0.00
+    rapport : TEXT NULL
+    statut : ENUM('en_cours','terminee')
+    --
+    <i>INDEX idx_materiel (materiel_id)</i>
+    <i>INDEX idx_technicien (technicien_id)</i>
+    <i>INDEX idx_statut (statut)</i>
+    <i>INDEX idx_deadline (deadline)</i>
+}
+
+class photos_materiel <<table>> {
+    <b>#id</b> : INT AUTO_INCREMENT
+    --
+    =>materiel_id : INT NOT NULL
+    chemin_photo : VARCHAR(255) NOT NULL
+    date_ajout : TIMESTAMP DEFAULT NOW()
+    --
+    <i>INDEX idx_materiel (materiel_id)</i>
+}
+
+' ============================================
+' CLÉS ÉTRANGÈRES
+' ============================================
+
+materiel::emprunteur_id }o--|| users::id : "FK\nON DELETE SET NULL"
+materiel::technicien_id }o--|| users::id : "FK\nON DELETE SET NULL"
+
+emprunts::materiel_id }o--|| materiel::id : "FK\nON DELETE CASCADE"
+emprunts::emprunteur_id }o--|| users::id : "FK\nON DELETE CASCADE"
+
+maintenances::materiel_id }o--|| materiel::id : "FK\nON DELETE CASCADE"
+maintenances::technicien_id }o--|| users::id : "FK\nON DELETE CASCADE"
+
+photos_materiel::materiel_id }o--|| materiel::id : "FK\nON DELETE CASCADE"
+
+' ============================================
+' VUES SQL
+' ============================================
+
+class vue_materiel_complet <<view>> {
+    Jointure materiel + users (emprunteur)
+    + users (technicien) + COUNT photos
+    --
+    Calcul automatique jours_retard
+    Nom complet emprunteur/technicien
+}
+
+class vue_emprunts_utilisateur <<view>> {
+    Jointure emprunts + users + materiel
+    --
+    Calcul statut_emprunt
+    Calcul duree_jours
+}
+
+class vue_maintenances_complet <<view>> {
+    Jointure maintenances + materiel + users
+    --
+    Calcul duree_jours
+    Calcul jours_avant_deadline
+}
+
+' ============================================
+' TRIGGERS
+' ============================================
+
+note bottom of materiel
+    <b>TRIGGERS :</b>
+    - trigger_emprunt_creation
+      (AFTER UPDATE → INSERT emprunts)
+    - trigger_emprunt_retour
+      (AFTER UPDATE → UPDATE emprunts)
+    - trigger_maintenance_creation
+      (AFTER UPDATE → INSERT maintenances)
+end note
+
+legend left
+    |= Symbole |= Signification |
+    | <b>#</b> | Clé primaire (PK) |
+    | <b>=></b> | Clé étrangère (FK) |
+    | <i>INDEX</i> | Index de performance |
+    | <<table>> | Table physique |
+    | <<view>> | Vue SQL (virtuelle) |
+endlegend
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

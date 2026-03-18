@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Gestion Matériel IUT GEII</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="page-auth">
+    <!-- TOGGLE THÈME -->
+    <button class="auth-theme-toggle" id="auth-theme-toggle" title="Changer de thème">
+        <i data-lucide="moon"></i>
+    </button>
+
+    <div class="auth-container">
+        <!-- LOGO IUT -->
+        <div class="auth-header">
+            <h1>IUT Lyon 1 - GEII</h1>
+            <p>Gestion du Matériel</p>
+        </div>
+
+        <!-- FORMULAIRE LOGIN -->
+        <div id="form-login-container" class="auth-form active">
+            <h2>Connexion</h2>
+            <form id="form-login">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="Entrez votre adresse email universitaire">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Mot de passe</label>
+                    <input type="password" id="login-password" required placeholder="Entrez votre mot de passe">
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="log-in"></i>
+                    Se connecter
+                </button>
+
+                <div id="login-error" class="error-message"></div>
+            </form>
+
+            <div class="auth-switch">
+                <p>Pas de compte ? <a href="#" id="btn-show-inscription">S'inscrire</a></p>
+            </div>
+        </div>
+
+        <!-- FORMULAIRE INSCRIPTION -->
+        <div id="form-inscription-container" class="auth-form">
+            <h2>Inscription</h2>
+            <form id="form-inscription">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inscription-nom">Nom *</label>
+                        <input type="text" id="inscription-nom" required placeholder="Entrez votre nom">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inscription-prenom">Prénom *</label>
+                        <input type="text" id="inscription-prenom" required placeholder="Entrez votre prénom">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inscription-email">Email *</label>
+                    <input type="email" id="inscription-email" required placeholder="Entrez votre email universitaire">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inscription-password">Mot de passe *</label>
+                        <input type="password" id="inscription-password" required placeholder="6 caractères minimum">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inscription-password-confirm">Confirmer *</label>
+                        <input type="password" id="inscription-password-confirm" required placeholder="Confirmez le mot de passe">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inscription-role">Rôle *</label>
+                    <select id="inscription-role" required>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="eleve">Élève</option>
+                        <option value="enseignant">Enseignant</option>
+                        <option value="technicien">Technicien</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i data-lucide="user-plus"></i>
+                    S'inscrire
+                </button>
+
+                <div id="inscription-error" class="error-message"></div>
+            </form>
+
+            <div class="auth-switch">
+                <p>Déjà un compte ? <a href="#" id="btn-show-login">Se connecter</a></p>
+            </div>
+        </div>
+
+        <!-- POPUP VÉRIFICATION CODE EMAIL -->
+        <div id="popup-verification" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <h2>Vérification Email</h2>
+                <p>Un code à 6 chiffres a été envoyé à votre adresse email.</p>
+                <p id="email-verification-display" class="text-muted"></p>
+
+                <form id="form-verification">
+                    <div class="form-group">
+                        <label for="verification-code">Code de vérification</label>
+                        <input type="text" id="verification-code" required maxlength="6"
+                               placeholder="XXXXXX" pattern="\d{6}">
+                    </div>
+
+                    <div class="popup-buttons">
+                        <button type="button" id="btn-renvoyer-code" class="btn btn-secondary">
+                            <i data-lucide="refresh-cw"></i>
+                            Renvoyer
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="check"></i>
+                            Valider
+                        </button>
+                    </div>
+
+                    <div id="verification-error" class="error-message"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

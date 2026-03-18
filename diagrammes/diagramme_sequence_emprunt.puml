@@ -1,0 +1,93 @@
+@startuml diagramme_sequence_emprunt
+!theme plain
+skinparam sequenceFontSize 11
+skinparam participantFontSize 11
+
+title Diagramme de Séquence - Processus d'Emprunt de Matériel
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' PARTICIPANTS
+' ============================================
+actor "Administrateur" as admin
+participant "Frontend\n(JavaScript)" as front #LightBlue
+participant "Backend\n(Flask API)" as back #LightGreen
+database "MySQL\n(gestion_iut)" as db #LightYellow
+participant "Trigger\nSQL" as trigger #Orange
+
+' ============================================
+' SÉQUENCE PRINCIPALE
+' ============================================
+== Authentification ==
+admin -> front : Connexion (email, password)
+front -> back : POST /api/auth/login
+back -> db : SELECT * FROM users WHERE email=?
+db --> back : User data
+back -> back : bcrypt.checkpw(password, hash)
+back --> front : { success: true, role: "admin" }
+front -> front : Redirection dashboard_admin.html
+
+== Sélection du matériel ==
+admin -> front : Clic "Modifier état" sur matériel
+front -> back : GET /api/materiels/:id
+back -> db : SELECT * FROM vue_materiel_complet WHERE id=?
+db --> back : Détails matériel
+back --> front : { materiel }
+front -> front : Affiche modal changement état
+
+== Sélection emprunteur ==
+front -> back : GET /api/users (role != admin)
+back -> db : SELECT * FROM users WHERE actif=1
+db --> back : Liste users
+back --> front : [ users ]
+front -> front : Remplit select emprunteurs
+
+== Création de l'emprunt ==
+admin -> front : Sélectionne emprunteur + date retour
+admin -> front : Clic "Valider"
+front -> back : PATCH /api/materiels/:id/etat
+note right of back
+    { 
+      etat: "emprunte",
+      emprunteur_id: 7,
+      date_retour_prevue: "2026-01-25"
+    }
+end note
+
+back -> db : UPDATE materiel SET etat='emprunte', emprunteur_id=7, date_retour_prevue='2026-01-25'
+db -> trigger : AFTER UPDATE (trigger_emprunt_creation)
+note right of trigger
+    Détecte: OLD.etat != 'emprunte'
+    AND NEW.etat = 'emprunte'
+end note
+trigger -> db : INSERT INTO emprunts (materiel_id, emprunteur_id, date_emprunt, date_retour_prevue)
+db --> back : Success
+back --> front : { success: true, message: "État modifié" }
+front -> front : Toast "Emprunt créé"
+front -> front : Actualise liste matériels
+
+== Vérification ==
+front -> back : GET /api/materiels
+back -> db : SELECT * FROM vue_materiel_complet
+db --> back : Liste mise à jour
+back --> front : [ materiels ]
+front -> front : Matériel affiché comme "emprunté"
+
+' ============================================
+' NOTES
+' ============================================
+note over trigger
+    Le trigger SQL automatise
+    la création de l'emprunt.
+    L'admin n'a qu'à changer
+    l'état du matériel.
+end note
+
+note over db
+    Les vues SQL simplifient
+    les requêtes en pré-joignant
+    les tables.
+end note
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

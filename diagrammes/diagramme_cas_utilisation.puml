@@ -1,0 +1,166 @@
+@startuml diagramme_cas_utilisation
+!theme plain
+left to right direction
+skinparam actorFontSize 12
+skinparam usecaseFontSize 10
+skinparam packageFontSize 12
+
+title Diagramme des Cas d'Utilisation
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' ACTEURS
+' ============================================
+actor "Visiteur" as visiteur #LightGray
+actor "Élève" as eleve #LightBlue
+actor "Enseignant" as enseignant #LightGreen
+actor "Technicien" as technicien #Orange
+actor "Administrateur" as admin #Red
+
+' Héritage des acteurs
+eleve -|> visiteur
+enseignant -|> eleve
+technicien -|> eleve
+admin -|> enseignant
+admin -|> technicien
+
+' ============================================
+' PACKAGES DE CAS D'UTILISATION
+' ============================================
+
+rectangle "Système de Gestion du Matériel IUT GEII" {
+
+    package "Authentification" {
+        usecase "S'inscrire" as UC_INSCRIRE
+        usecase "Vérifier email" as UC_VERIF
+        usecase "Se connecter" as UC_LOGIN
+        usecase "Se déconnecter" as UC_LOGOUT
+        usecase "Réinitialiser MDP" as UC_RESET
+    }
+
+    package "Consultation" {
+        usecase "Consulter matériel\ndisponible" as UC_VOIR_MAT
+        usecase "Voir détails\nmatériel" as UC_DETAIL_MAT
+        usecase "Voir ses emprunts\nen cours" as UC_MES_EMP
+        usecase "Voir son historique\nemprunts" as UC_HIST_EMP
+    }
+
+    package "Gestion Emprunts" {
+        usecase "Créer un emprunt" as UC_CREER_EMP
+        usecase "Valider un retour" as UC_RETOUR
+        usecase "Gérer les retards" as UC_RETARDS
+    }
+
+    package "Gestion Maintenances" {
+        usecase "Démarrer une\nmaintenance" as UC_DEM_MAINT
+        usecase "Suivre ses\nmaintenances" as UC_SUIVI_MAINT
+        usecase "Terminer une\nmaintenance" as UC_FIN_MAINT
+    }
+
+    package "Administration" {
+        usecase "Gérer le matériel\n(CRUD)" as UC_CRUD_MAT
+        usecase "Gérer les utilisateurs" as UC_CRUD_USER
+        usecase "Activer/Désactiver\ncompte" as UC_TOGGLE
+        usecase "Modifier les rôles" as UC_ROLES
+    }
+
+    package "Statistiques & Exports" {
+        usecase "Voir dashboard\nKPI" as UC_DASHBOARD
+        usecase "Voir graphiques\nstatistiques" as UC_GRAPHS
+        usecase "Exporter Excel" as UC_EXPORT_XLS
+        usecase "Exporter PDF" as UC_EXPORT_PDF
+    }
+
+    package "Interface" {
+        usecase "Changer thème\n(clair/sombre)" as UC_THEME
+        usecase "Rechercher\nmatériel" as UC_SEARCH
+        usecase "Filtrer par\ncatégorie/état" as UC_FILTER
+    }
+}
+
+' ============================================
+' RELATIONS VISITEUR
+' ============================================
+visiteur --> UC_INSCRIRE
+visiteur --> UC_VERIF
+visiteur --> UC_LOGIN
+visiteur --> UC_RESET
+
+' ============================================
+' RELATIONS ÉLÈVE
+' ============================================
+eleve --> UC_LOGOUT
+eleve --> UC_VOIR_MAT
+eleve --> UC_DETAIL_MAT
+eleve --> UC_MES_EMP
+eleve --> UC_HIST_EMP
+eleve --> UC_THEME
+eleve --> UC_SEARCH
+eleve --> UC_FILTER
+
+' ============================================
+' RELATIONS ENSEIGNANT (hérite élève)
+' ============================================
+' (hérite de élève, pas besoin de répéter)
+
+' ============================================
+' RELATIONS TECHNICIEN
+' ============================================
+technicien --> UC_DEM_MAINT
+technicien --> UC_SUIVI_MAINT
+technicien --> UC_FIN_MAINT
+
+' ============================================
+' RELATIONS ADMINISTRATEUR
+' ============================================
+admin --> UC_CREER_EMP
+admin --> UC_RETOUR
+admin --> UC_RETARDS
+admin --> UC_CRUD_MAT
+admin --> UC_CRUD_USER
+admin --> UC_TOGGLE
+admin --> UC_ROLES
+admin --> UC_DASHBOARD
+admin --> UC_GRAPHS
+admin --> UC_EXPORT_XLS
+admin --> UC_EXPORT_PDF
+
+' ============================================
+' RELATIONS INCLUDE/EXTEND
+' ============================================
+UC_INSCRIRE ..> UC_VERIF : <<include>>
+UC_LOGIN ..> UC_LOGOUT : <<extend>>
+UC_CREER_EMP ..> UC_RETARDS : <<extend>>
+UC_CRUD_MAT ..> UC_DETAIL_MAT : <<include>>
+
+' ============================================
+' NOTES
+' ============================================
+note right of admin
+    L'administrateur a accès
+    à TOUTES les fonctionnalités
+    du système
+end note
+
+note right of technicien
+    Le technicien gère uniquement
+    les maintenances qui lui
+    sont assignées
+end note
+
+note bottom of UC_RETARDS
+    Envoi automatique d'emails
+    de rappel via scheduler
+end note
+
+legend left
+    |= Acteur |= Accès |
+    | Visiteur | Inscription, Login |
+    | Élève | Consultation, Mes emprunts |
+    | Enseignant | = Élève |
+    | Technicien | + Maintenances |
+    | Admin | Accès complet |
+endlegend
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

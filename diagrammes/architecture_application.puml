@@ -1,0 +1,116 @@
+@startuml architecture_application
+!theme plain
+skinparam componentFontSize 11
+skinparam packageFontSize 12
+
+title Architecture 3-Tiers de l'Application
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' COUCHE PRÉSENTATION (FRONTEND)
+' ============================================
+package "Couche Présentation (Frontend)" as frontend #LightBlue {
+    component [index.html\n<i>Authentification</i>] as login
+    component [dashboard_admin.html\n<i>Interface Admin</i>] as admin
+    component [dashboard_user.html\n<i>Interface Élève/Enseignant</i>] as user
+    component [dashboard_technicien.html\n<i>Interface Technicien</i>] as tech
+
+    package "Assets Statiques" {
+        component [style.css\n<i>Styles + Thèmes</i>] as css
+        component [auth.js / admin.js\nuser.js / technicien.js\n<i>Logique Frontend</i>] as js
+        component [Chart.js\n<i>Graphiques</i>] as chartjs
+        component [Lucide Icons\n<i>Icônes SVG</i>] as icons
+    }
+}
+
+' ============================================
+' COUCHE MÉTIER (BACKEND)
+' ============================================
+package "Couche Métier (Backend)" as backend #LightGreen {
+    component [app.py\n<i>Flask Application</i>] as flask
+
+    package "API REST" {
+        component [/api/auth/*\n<i>Authentification</i>] as api_auth
+        component [/api/materiels/*\n<i>Gestion Matériel</i>] as api_mat
+        component [/api/users/*\n<i>Gestion Users</i>] as api_users
+        component [/api/emprunts/*\n<i>Gestion Emprunts</i>] as api_emp
+        component [/api/maintenances/*\n<i>Gestion Maintenances</i>] as api_maint
+        component [/api/stats/*\n<i>Statistiques</i>] as api_stats
+        component [/api/export/*\n<i>Exports Excel/PDF</i>] as api_export
+    }
+
+    package "Services" {
+        component [config.py\n<i>Configuration</i>] as config
+        component [app_exports.py\n<i>Génération fichiers</i>] as exports
+        component [scheduler_emails.py\n<i>Emails automatiques</i>] as scheduler
+    }
+
+    package "Sécurité" {
+        component [bcrypt\n<i>Hashage MDP</i>] as bcrypt
+        component [Sessions Flask\n<i>Authentification</i>] as sessions
+    }
+}
+
+' ============================================
+' COUCHE DONNÉES (DATABASE)
+' ============================================
+package "Couche Données (Database)" as database #LightYellow {
+    database "MySQL 8.0\ngestion_iut" as mysql {
+        component [users\nmateriel\nemprunts\nmaintenances\nphotos_materiel] as tables
+        component [vue_materiel_complet\nvue_emprunts_utilisateur\nvue_maintenances_complet] as views
+        component [trigger_emprunt_creation\ntrigger_emprunt_retour\ntrigger_maintenance_creation] as triggers
+    }
+
+    folder "Stockage Fichiers" as storage {
+        component [/static/uploads/\n<i>Photos matériel</i>] as uploads
+        component [/exports/\n<i>Fichiers générés</i>] as export_files
+    }
+}
+
+' ============================================
+' RELATIONS
+' ============================================
+' Frontend -> Backend
+login --> api_auth : HTTP POST
+admin --> api_mat : HTTP GET/POST/PATCH/DELETE
+admin --> api_users : HTTP GET/PATCH/DELETE
+admin --> api_stats : HTTP GET
+admin --> api_export : HTTP GET
+user --> api_emp : HTTP GET
+tech --> api_maint : HTTP GET/POST/PATCH
+
+' Backend -> Database
+flask --> mysql : mysql-connector-python
+api_mat --> tables
+api_users --> tables
+api_emp --> views
+api_maint --> views
+api_stats --> views
+
+' Services
+exports --> export_files : Génère
+flask --> uploads : Upload/Delete
+scheduler --> mysql : Lecture retards
+scheduler ..> login : Envoi emails (SMTP)
+
+' Assets
+admin --> css
+admin --> js
+admin --> chartjs
+admin --> icons
+
+' ============================================
+' LÉGENDE
+' ============================================
+legend right
+    |= Technologie |= Usage |
+    | Flask 3.0 | Framework web Python |
+    | MySQL 8.0 | Base de données |
+    | Chart.js | Graphiques |
+    | bcrypt | Sécurité mots de passe |
+    | openpyxl | Export Excel |
+    | reportlab | Export PDF |
+endlegend
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

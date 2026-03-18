@@ -1,0 +1,114 @@
+@startuml modele_entite_association
+!theme plain
+skinparam linetype ortho
+skinparam defaultFontSize 11
+
+title Modèle Entité-Association (E/A)\nApplication Gestion Matériel IUT GEII
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' DÉFINITION DES ENTITÉS
+' ============================================
+
+entity "USER" as USER {
+    * **id** : INT <<PK>>
+    --
+    * nom : VARCHAR(100)
+    * prenom : VARCHAR(100)
+    * email : VARCHAR(255) <<UNIQUE>>
+    * password_hash : VARCHAR(255)
+    * role : ENUM
+    o email_verifie : BOOLEAN
+    o code_verification : VARCHAR(6)
+    o date_code_expiration : TIMESTAMP
+    o date_creation : TIMESTAMP
+    o date_derniere_connexion : TIMESTAMP
+    o actif : BOOLEAN
+}
+
+entity "MATERIEL" as MATERIEL {
+    * **id** : INT <<PK>>
+    --
+    * nom : VARCHAR(255)
+    o categorie : VARCHAR(100)
+    o etat : ENUM
+    o localisation : VARCHAR(100)
+    o description : TEXT
+    o date_ajout : TIMESTAMP
+    o date_mouvement : TIMESTAMP
+    o date_retour_prevue : DATE
+    o emprunteur_id : INT <<FK>>
+    o technicien_id : INT <<FK>>
+}
+
+entity "EMPRUNT" as EMPRUNT {
+    * **id** : INT <<PK>>
+    --
+    * materiel_id : INT <<FK>>
+    * emprunteur_id : INT <<FK>>
+    o date_emprunt : TIMESTAMP
+    * date_retour_prevue : DATE
+    o date_retour_effective : TIMESTAMP
+    o jours_retard : INT
+    o commentaire : TEXT
+}
+
+entity "MAINTENANCE" as MAINTENANCE {
+    * **id** : INT <<PK>>
+    --
+    * materiel_id : INT <<FK>>
+    * technicien_id : INT <<FK>>
+    o date_debut : TIMESTAMP
+    o date_fin : TIMESTAMP
+    * deadline : DATE
+    o composants_commandes : TEXT
+    o couts : DECIMAL(10,2)
+    o rapport : TEXT
+    o statut : ENUM
+}
+
+entity "PHOTO_MATERIEL" as PHOTO {
+    * **id** : INT <<PK>>
+    --
+    * materiel_id : INT <<FK>>
+    * chemin_photo : VARCHAR(255)
+    o date_ajout : TIMESTAMP
+}
+
+' ============================================
+' RELATIONS
+' ============================================
+
+USER ||--o{ EMPRUNT : "emprunte\n(1,N)"
+EMPRUNT }o--|| MATERIEL : "concerne\n(1,1)"
+
+USER ||--o{ MAINTENANCE : "effectue\n(1,N)"
+MAINTENANCE }o--|| MATERIEL : "subit\n(1,1)"
+
+USER |o--o{ MATERIEL : "emprunte\nactuellement\n(0,N)"
+USER |o--o{ MATERIEL : "maintient\nactuellement\n(0,N)"
+
+MATERIEL ||--o{ PHOTO : "possède\n(1,N)"
+
+note right of USER
+    <b>Rôles :</b>
+    admin, technicien,
+    enseignant, eleve
+end note
+
+note right of MATERIEL
+    <b>États :</b>
+    en_stock, emprunte,
+    en_maintenance
+end note
+
+legend left
+    |= Symbole |= Signification |
+    | * | Obligatoire |
+    | o | Optionnel |
+    | **gras** | Clé primaire |
+    | <<FK>> | Clé étrangère |
+endlegend
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

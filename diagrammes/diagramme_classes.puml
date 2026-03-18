@@ -1,0 +1,204 @@
+@startuml diagramme_classes
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam classFontSize 12
+skinparam classAttributeFontSize 10
+skinparam packageFontSize 14
+skinparam linetype ortho
+
+title Diagramme de Classes - Application Gestion Matériel IUT GEII
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' ÉNUMÉRATIONS
+' ============================================
+enum EtatMateriel {
+    en_stock
+    emprunte
+    en_maintenance
+}
+
+enum RoleUtilisateur {
+    admin
+    technicien
+    enseignant
+    eleve
+}
+
+enum StatutMaintenance {
+    en_cours
+    terminee
+}
+
+' ============================================
+' CLASSES PRINCIPALES
+' ============================================
+class User {
+    - id : int <<PK>>
+    - nom : string
+    - prenom : string
+    - email : string <<unique>>
+    - password_hash : string
+    - role : RoleUtilisateur
+    - email_verifie : boolean
+    - code_verification : string
+    - date_code_expiration : datetime
+    - date_creation : datetime
+    - date_derniere_connexion : datetime
+    - actif : boolean
+    __
+    + getNomComplet() : string
+    + verifierMotDePasse(password: string) : boolean
+    + genererCodeVerification() : string
+    + estActif() : boolean
+    + peutEmprunter() : boolean
+}
+
+class Materiel {
+    - id : int <<PK>>
+    - nom : string
+    - categorie : string
+    - etat : EtatMateriel
+    - localisation : string
+    - description : text
+    - date_ajout : datetime
+    - date_mouvement : datetime
+    - date_retour_prevue : date
+    - emprunteur_id : int <<FK>>
+    - technicien_id : int <<FK>>
+    __
+    + estDisponible() : boolean
+    + estEnRetard() : boolean
+    + getJoursRetard() : int
+    + changerEtat(nouvelEtat: EtatMateriel) : void
+    + getNombrePhotos() : int
+}
+
+class Emprunt {
+    - id : int <<PK>>
+    - materiel_id : int <<FK>>
+    - emprunteur_id : int <<FK>>
+    - date_emprunt : datetime
+    - date_retour_prevue : date
+    - date_retour_effective : datetime
+    - jours_retard : int
+    - commentaire : text
+    __
+    + estEnCours() : boolean
+    + estEnRetard() : boolean
+    + calculerJoursRetard() : int
+    + cloturer() : void
+    + getDureeJours() : int
+}
+
+class Maintenance {
+    - id : int <<PK>>
+    - materiel_id : int <<FK>>
+    - technicien_id : int <<FK>>
+    - date_debut : datetime
+    - date_fin : datetime
+    - deadline : date
+    - composants_commandes : text
+    - couts : decimal
+    - rapport : text
+    - statut : StatutMaintenance
+    __
+    + estEnCours() : boolean
+    + getJoursAvantDeadline() : int
+    + terminer(rapport: string, couts: decimal) : void
+    + getDureeJours() : int
+}
+
+class PhotoMateriel {
+    - id : int <<PK>>
+    - materiel_id : int <<FK>>
+    - chemin_photo : string
+    - date_ajout : datetime
+    __
+    + getUrl() : string
+    + supprimer() : void
+}
+
+' ============================================
+' CLASSES DE SERVICE (COUCHE MÉTIER)
+' ============================================
+class GestionMaterielService <<service>> {
+    + listerMateriels(filtres: dict) : List<Materiel>
+    + ajouterMateriel(data: dict) : Materiel
+    + modifierMateriel(id: int, data: dict) : Materiel
+    + supprimerMateriel(id: int) : boolean
+    + changerEtat(id: int, etat: EtatMateriel, personneId: int) : void
+}
+
+class GestionEmpruntService <<service>> {
+    + creerEmprunt(materielId: int, emprunteurId: int, dateRetour: date) : Emprunt
+    + validerRetour(empruntId: int) : void
+    + listerEmpruntsEnCours() : List<Emprunt>
+    + listerEmpruntsEnRetard() : List<Emprunt>
+    + envoyerRappelsRetard() : void
+}
+
+class GestionMaintenanceService <<service>> {
+    + demarrerMaintenance(materielId: int, technicienId: int, deadline: date) : Maintenance
+    + terminerMaintenance(id: int, rapport: string, couts: decimal) : void
+    + listerMaintenancesEnCours() : List<Maintenance>
+}
+
+class AuthenticationService <<service>> {
+    + inscrire(data: dict) : User
+    + verifierEmail(email: string, code: string) : boolean
+    + connecter(email: string, password: string) : User
+    + deconnecter(sessionId: string) : void
+    + envoyerCodeVerification(email: string) : void
+}
+
+class ExportService <<service>> {
+    + exporterInventaireExcel() : bytes
+    + exporterEmpruntsExcel() : bytes
+    + exporterRapportPDF() : bytes
+}
+
+class StatistiquesService <<service>> {
+    + getKPIDashboard() : dict
+    + getRepartitionCategories() : dict
+    + getEvolutionEmprunts(jours: int) : List<dict>
+}
+
+' ============================================
+' RELATIONS
+' ============================================
+' Relations entre entités
+User "1" -- "0..*" Emprunt : emprunte >
+User "1" -- "0..*" Maintenance : effectue >
+User "1" -- "0..*" Materiel : emprunte actuellement >
+User "1" -- "0..*" Materiel : maintient actuellement >
+
+Materiel "1" -- "0..*" Emprunt : est emprunté dans >
+Materiel "1" -- "0..*" Maintenance : subit >
+Materiel "1" -- "0..*" PhotoMateriel : possède >
+
+' Relations avec énumérations
+Materiel ..> EtatMateriel : utilise
+User ..> RoleUtilisateur : utilise
+Maintenance ..> StatutMaintenance : utilise
+
+' Relations services
+GestionMaterielService ..> Materiel : gère
+GestionEmpruntService ..> Emprunt : gère
+GestionMaintenanceService ..> Maintenance : gère
+AuthenticationService ..> User : gère
+ExportService ..> Materiel : exporte
+ExportService ..> Emprunt : exporte
+StatistiquesService ..> Materiel : analyse
+StatistiquesService ..> Emprunt : analyse
+
+legend right
+  |= Symbole |= Signification |
+  | <<PK>> | Clé primaire |
+  | <<FK>> | Clé étrangère |
+  | <<unique>> | Contrainte d'unicité |
+  | <<service>> | Classe de service |
+endlegend
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

@@ -1,0 +1,246 @@
+@startuml diagramme_objets
+!theme plain
+skinparam objectFontSize 11
+skinparam objectAttributeFontSize 9
+skinparam linetype ortho
+
+title Diagramme d'Objets - Exemple d'Instance du Système
+header BUT3 GEII - SAE Bases de Données Avancées - Janvier 2026
+
+' ============================================
+' INSTANCES UTILISATEURS
+' ============================================
+object "admin : User" as admin {
+    id = 1
+    nom = "Admin"
+    prenom = "IUT GEII"
+    email = "admin@iut.fr"
+    role = admin
+    email_verifie = true
+    actif = true
+}
+
+object "pierre : User" as pierre {
+    id = 2
+    nom = "Martin"
+    prenom = "Pierre"
+    email = "technicien@iut.fr"
+    role = technicien
+    email_verifie = true
+    actif = true
+}
+
+object "jean : User" as jean {
+    id = 4
+    nom = "Bernard"
+    prenom = "Jean"
+    email = "enseignant@iut.fr"
+    role = enseignant
+    email_verifie = true
+    actif = true
+}
+
+object "lucas : User" as lucas {
+    id = 7
+    nom = "Durand"
+    prenom = "Lucas"
+    email = "eleve@iut.fr"
+    role = eleve
+    email_verifie = true
+    actif = true
+}
+
+object "emma : User" as emma {
+    id = 8
+    nom = "Leroy"
+    prenom = "Emma"
+    email = "emma.leroy@etu.univ-lyon1.fr"
+    role = eleve
+    email_verifie = true
+    actif = true
+}
+
+' ============================================
+' INSTANCES MATÉRIELS
+' ============================================
+object "oscillo1 : Materiel" as oscillo1 {
+    id = 1
+    nom = "Oscilloscope Rigol DS1054Z"
+    categorie = "Mesure"
+    etat = en_stock
+    localisation = "Salle TP B-04"
+    emprunteur_id = null
+    technicien_id = null
+}
+
+object "oscillo3 : Materiel" as oscillo3 {
+    id = 21
+    nom = "Oscilloscope Rigol DS1054Z #3"
+    categorie = "Mesure"
+    etat = emprunte
+    localisation = "Élève - Lucas Durand"
+    date_retour_prevue = "2026-01-25"
+    emprunteur_id = 7
+}
+
+object "multimetre : Materiel" as multimetre {
+    id = 23
+    nom = "Multimètre Fluke 87V"
+    categorie = "Mesure"
+    etat = emprunte
+    localisation = "Élève - Emma Leroy"
+    date_retour_prevue = "2026-01-13"
+    emprunteur_id = 8
+    **EN RETARD (5 jours)**
+}
+
+object "oscilloAgilent : Materiel" as oscilloAgilent {
+    id = 26
+    nom = "Oscilloscope Agilent DSO-X 2024A"
+    categorie = "Mesure"
+    etat = en_maintenance
+    localisation = "Atelier Maintenance"
+    technicien_id = 2
+}
+
+object "arduino : Materiel" as arduino {
+    id = 10
+    nom = "Arduino Mega 2560"
+    categorie = "Informatique"
+    etat = en_stock
+    localisation = "Armoire B-05"
+}
+
+' ============================================
+' INSTANCES EMPRUNTS
+' ============================================
+object "emprunt1 : Emprunt" as emprunt1 {
+    id = 10
+    materiel_id = 21
+    emprunteur_id = 7
+    date_emprunt = "2026-01-13"
+    date_retour_prevue = "2026-01-25"
+    date_retour_effective = null
+    jours_retard = 0
+    commentaire = "Projet SAE en cours"
+}
+
+object "emprunt2 : Emprunt" as emprunt2 {
+    id = 12
+    materiel_id = 23
+    emprunteur_id = 8
+    date_emprunt = "2025-12-30"
+    date_retour_prevue = "2026-01-13"
+    date_retour_effective = null
+    jours_retard = 5
+    commentaire = "RETARD - À relancer"
+}
+
+object "empruntTermine : Emprunt" as empruntTermine {
+    id = 1
+    materiel_id = 1
+    emprunteur_id = 7
+    date_emprunt = "2025-11-19"
+    date_retour_prevue = "2025-12-03"
+    date_retour_effective = "2025-12-01"
+    jours_retard = 0
+    commentaire = "Rendu anticipé"
+}
+
+' ============================================
+' INSTANCES MAINTENANCES
+' ============================================
+object "maint1 : Maintenance" as maint1 {
+    id = 6
+    materiel_id = 26
+    technicien_id = 2
+    date_debut = "2026-01-08"
+    date_fin = null
+    deadline = "2026-01-22"
+    composants_commandes = "Écran LCD"
+    couts = 120.00
+    statut = en_cours
+    rapport = "Diagnostic : écran HS"
+}
+
+object "maintTerminee : Maintenance" as maintTerminee {
+    id = 2
+    materiel_id = 1
+    technicien_id = 2
+    date_debut = "2025-10-10"
+    date_fin = "2025-10-15"
+    deadline = "2025-10-24"
+    composants_commandes = "Sonde CH1"
+    couts = 45.50
+    statut = terminee
+    rapport = "Remplacement sonde OK"
+}
+
+' ============================================
+' INSTANCES PHOTOS
+' ============================================
+object "photo1 : PhotoMateriel" as photo1 {
+    id = 1
+    materiel_id = 1
+    chemin_photo = "/uploads/1_oscillo.jpg"
+    date_ajout = "2025-07-18"
+}
+
+object "photo2 : PhotoMateriel" as photo2 {
+    id = 2
+    materiel_id = 1
+    chemin_photo = "/uploads/1_oscillo_detail.jpg"
+    date_ajout = "2025-07-18"
+}
+
+' ============================================
+' LIENS ENTRE OBJETS
+' ============================================
+' Emprunts en cours
+lucas -- emprunt1 : emprunte
+emprunt1 -- oscillo3 : concerne
+oscillo3 -- lucas : emprunté par
+
+emma -- emprunt2 : emprunte
+emprunt2 -- multimetre : concerne
+multimetre -- emma : emprunté par (EN RETARD)
+
+' Emprunt terminé
+lucas -- empruntTermine : a emprunté
+empruntTermine -- oscillo1 : concernait
+
+' Maintenance en cours
+pierre -- maint1 : effectue
+maint1 -- oscilloAgilent : concerne
+oscilloAgilent -- pierre : maintenu par
+
+' Maintenance terminée
+pierre -- maintTerminee : a effectué
+maintTerminee -- oscillo1 : concernait
+
+' Photos
+oscillo1 -- photo1 : possède
+oscillo1 -- photo2 : possède
+
+note bottom of multimetre
+    <b>ALERTE RETARD</b>
+    Cet emprunt est en retard
+    de 5 jours.
+    Email de rappel envoyé.
+end note
+
+note right of maint1
+    Maintenance en cours
+    Deadline dans 4 jours
+    Pièce commandée en attente
+end note
+
+legend right
+  |= Couleur |= Signification |
+  | <back:lightgreen>Vert</back> | En stock / Disponible |
+  | <back:lightyellow>Jaune</back> | Emprunté |
+  | <back:lightcoral>Rouge</back> | En retard / Maintenance |
+endlegend
+
+footer Généré pour SAE BDD Avancées - IUT Lyon 1 GEII
+@enduml

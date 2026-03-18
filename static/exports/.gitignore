@@ -1,0 +1,6 @@
+# Ignorer tous les fichiers exports
+*.xlsx
+*.pdf
+
+# Garder le dossier
+!.gitignore

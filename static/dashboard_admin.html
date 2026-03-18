@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Gestion Matériel IUT GEII</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Chart.js pour les graphiques -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="layout-sidebar">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i data-lucide="box"></i>
+                    </div>
+                    <div class="sidebar-logo-text">
+                        <h1>IUT Lyon 1</h1>
+                        <span>Gestion Matériel</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu principal</div>
+                    <a class="nav-link active" data-tab="dashboard">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a class="nav-link" data-tab="gestion">
+                        <i data-lucide="package"></i>
+                        <span>Gestion Matériel</span>
+                    </a>
+                    <a class="nav-link" data-tab="rapports">
+                        <i data-lucide="file-bar-chart"></i>
+                        <span>Rapports & Exports</span>
+                    </a>
+                    <a class="nav-link" data-tab="utilisateurs">
+                        <i data-lucide="users"></i>
+                        <span>Utilisateurs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-details">
+                        <div class="user-name" id="user-nom">Admin</div>
+                        <div class="user-role">Administrateur</div>
+                    </div>
+                </div>
+
+                <div class="theme-toggle" id="theme-toggle">
+                    <span class="theme-toggle-icon">
+                        <i data-lucide="moon"></i>
+                    </span>
+                    <span class="theme-toggle-text">Mode sombre</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <button class="btn-logout" id="btn-deconnexion">
+                    <i data-lucide="log-out"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- OVERLAY MOBILE -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- CONTENU PRINCIPAL -->
+        <div class="main-wrapper">
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <button class="btn-menu-mobile" id="btn-menu-mobile">
+                            <i data-lucide="menu"></i>
+                        </button>
+                        <h1 id="page-title">Dashboard</h1>
+                        <p id="page-subtitle">Vue d'ensemble de la gestion du matériel</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" id="btn-ajouter-rapide">
+                            <i data-lucide="plus"></i>
+                            Ajouter matériel
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <!-- ONGLET DASHBOARD -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <!-- CARTES STATISTIQUES -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon blue">
+                                    <i data-lucide="package"></i>
+                                </div>
+                            </div>
+                            <div class="stat-card-value" id="stat-total">0</div>
+                            <div class="stat-card-label">Total Matériel</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon green">
+                                    <i data-lucide="check-circle"></i>
+                                </div>
+                            </div>
+                            <div class="stat-card-value" id="stat-stock">0</div>
+                            <div class="stat-card-label">En stock</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon orange">
+                                    <i data-lucide="user-check"></i>
+                                </div>
+                            </div>
+                            <div class="stat-card-value" id="stat-emprunts">0</div>
+                            <div class="stat-card-label">Empruntés</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon purple">
+                                    <i data-lucide="wrench"></i>
+                                </div>
+                            </div>
+                            <div class="stat-card-value" id="stat-maintenance">0</div>
+                            <div class="stat-card-label">En maintenance</div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon red">
+                                    <i data-lucide="alert-triangle"></i>
+                                </div>
+                            </div>
+                            <div class="stat-card-value" id="stat-retards">0</div>
+                            <div class="stat-card-label">En retard</div>
+                        </div>
+                    </div>
+
+                    <!-- GRAPHIQUES -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h3 class="chart-card-title">Répartition par catégorie</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="chart-categories"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <h3 class="chart-card-title">Évolution des emprunts (30 jours)</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="chart-evolution"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ONGLET GESTION -->
+                <div id="tab-gestion" class="tab-content">
+                    <!-- FORMULAIRE AJOUT MATÉRIEL -->
+                    <div class="card">
+                        <h2>Ajouter du Matériel</h2>
+                        <form id="form-ajout-materiel">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ajout-nom">Nom du matériel *</label>
+                                    <input type="text" id="ajout-nom" required placeholder="Ex: Arduino Uno">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ajout-categorie">Catégorie</label>
+                                    <input type="text" id="ajout-categorie" placeholder="Ex: Électronique">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="ajout-localisation">Localisation</label>
+                                    <input type="text" id="ajout-localisation" placeholder="Ex: Salle B-04, Armoire 3">
+                                </div>
+                                <div class="form-group">
+                                    <label for="ajout-description">Référence *</label>
+                                    <input type="text" id="ajout-description" required placeholder="Ex: REF-2024-001">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-lucide="plus"></i>
+                                Ajouter
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- TOOLBAR RECHERCHE ET FILTRES -->
+                    <div class="table-toolbar">
+                        <div class="search-wrapper">
+                            <i data-lucide="search" class="search-icon"></i>
+                            <input type="text" id="search-materiel" placeholder="Rechercher un matériel...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-etat">État :</label>
+                            <select id="filter-etat">
+                                <option value="">Tous</option>
+                                <option value="en_stock">En stock</option>
+                                <option value="emprunte">Emprunté</option>
+                                <option value="en_maintenance">Maintenance</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-categorie">Catégorie :</label>
+                            <select id="filter-categorie">
+                                <option value="">Toutes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- TABLEAU MATÉRIEL -->
+                    <div class="card">
+                        <h2>Liste du Matériel</h2>
+                        <table id="table-materiel">
+                            <thead>
+                                <tr>
+                                    <th width="50">Info</th>
+                                    <th class="sortable" data-sort="nom">Nom</th>
+                                    <th class="sortable" data-sort="categorie">Catégorie</th>
+                                    <th class="sortable" data-sort="etat">État</th>
+                                    <th>Personne</th>
+                                    <th class="sortable" data-sort="retard">Retard</th>
+                                    <th width="150">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="msg-aucun-resultat" class="text-muted" style="display: none;">
+                            Aucun matériel trouvé
+                        </p>
+                        <!-- PAGINATION -->
+                        <div id="pagination-materiel" class="pagination"></div>
+                    </div>
+                </div>
+
+                <!-- ONGLET RAPPORTS -->
+                <div id="tab-rapports" class="tab-content">
+                    <!-- EXPORTS EXCEL -->
+                    <div class="card">
+                        <h2>Exports Excel</h2>
+
+                        <h3 style="margin-top: 20px; color: var(--text-primary);">Inventaire et Listes</h3>
+                        <div class="export-grid">
+                            <button class="btn btn-success" id="btn-export-inventaire">
+                                <i data-lucide="file-spreadsheet"></i>
+                                Inventaire Matériel
+                            </button>
+                            <button class="btn btn-success" id="btn-export-eleves">
+                                <i data-lucide="users"></i>
+                                Liste Élèves
+                            </button>
+                            <button class="btn btn-success" id="btn-export-enseignants">
+                                <i data-lucide="graduation-cap"></i>
+                                Liste Enseignants
+                            </button>
+                            <button class="btn btn-success" id="btn-export-techniciens">
+                                <i data-lucide="wrench"></i>
+                                Liste Techniciens
+                            </button>
+                        </div>
+
+                        <h3 style="margin-top: 30px; color: var(--text-primary);">Historiques</h3>
+                        <div class="export-grid">
+                            <button class="btn btn-success" id="btn-export-emprunts">
+                                <i data-lucide="history"></i>
+                                Historique Emprunts
+                            </button>
+                            <button class="btn btn-success" id="btn-export-maintenances">
+                                <i data-lucide="settings"></i>
+                                Historique Maintenances
+                            </button>
+                            <button class="btn btn-success" id="btn-export-retards">
+                                <i data-lucide="alert-circle"></i>
+                                Retards en cours
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RAPPORTS PDF -->
+                    <div class="card">
+                        <h2>Rapports PDF</h2>
+                        <div class="export-grid">
+                            <button class="btn btn-primary" id="btn-export-rapport-mensuel">
+                                <i data-lucide="file-text"></i>
+                                Rapport Mensuel Complet
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ONGLET UTILISATEURS -->
+                <div id="tab-utilisateurs" class="tab-content">
+                    <!-- TOOLBAR RECHERCHE UTILISATEURS -->
+                    <div class="table-toolbar">
+                        <div class="search-wrapper">
+                            <i data-lucide="search" class="search-icon"></i>
+                            <input type="text" id="search-utilisateur" placeholder="Rechercher un utilisateur...">
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-role">Rôle :</label>
+                            <select id="filter-role">
+                                <option value="">Tous</option>
+                                <option value="admin">Admin</option>
+                                <option value="eleve">Élève</option>
+                                <option value="enseignant">Enseignant</option>
+                                <option value="technicien">Technicien</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="filter-actif">Statut :</label>
+                            <select id="filter-actif">
+                                <option value="">Tous</option>
+                                <option value="1">Actif</option>
+                                <option value="0">Inactif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- TABLEAU UTILISATEURS -->
+                    <div class="card">
+                        <h2>Liste des Utilisateurs</h2>
+                        <table id="table-utilisateurs">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Statut</th>
+                                    <th>Email vérifié</th>
+                                    <th>Dernière connexion</th>
+                                    <th width="180">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="msg-aucun-utilisateur" class="text-muted" style="display: none;">
+                            Aucun utilisateur trouvé
+                        </p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- POPUP INFO MATÉRIEL -->
+    <div id="popup-info" class="popup-overlay" style="display: none;">
+        <div class="popup-content popup-large">
+            <button class="popup-close" id="popup-info-close">×</button>
+            <h2>Informations Matériel</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Nom :</label>
+                    <span id="info-nom"></span>
+                </div>
+                <div class="info-item">
+                    <label>Catégorie :</label>
+                    <span id="info-categorie"></span>
+                </div>
+                <div class="info-item">
+                    <label>Localisation :</label>
+                    <span id="info-localisation"></span>
+                </div>
+                <div class="info-item">
+                    <label>Description :</label>
+                    <span id="info-description"></span>
+                </div>
+                <div class="info-item">
+                    <label>Date retour prévue :</label>
+                    <span id="info-date-retour"></span>
+                </div>
+                <div class="info-item">
+                    <label>Dernier mouvement :</label>
+                    <span id="info-mouvement"></span>
+                </div>
+            </div>
+
+            <h3>Photos</h3>
+            <div class="photos-section">
+                <div id="galerie-photos" class="galerie-photos"></div>
+                <div class="upload-photo">
+                    <input type="file" id="input-photo" accept="image/*" style="display: none;">
+                    <button class="btn btn-secondary" id="btn-ajouter-photo">
+                        <i data-lucide="upload"></i>
+                        Ajouter une photo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP CHANGEMENT ÉTAT -->
+    <div id="popup-etat" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <button class="popup-close" id="popup-etat-close">×</button>
+            <h2>Changer l'état</h2>
+            <p id="popup-etat-nom-materiel" class="text-muted"></p>
+
+            <form id="form-changer-etat">
+                <div class="form-group">
+                    <label for="popup-etat-select">Nouvel état *</label>
+                    <select id="popup-etat-select" required>
+                        <option value="">-- Choisir --</option>
+                        <option value="en_stock">En stock</option>
+                        <option value="emprunte">Emprunté</option>
+                        <option value="en_maintenance">En maintenance</option>
+                    </select>
+                </div>
+
+                <div id="groupe-personne" class="form-group" style="display: none;">
+                    <label for="popup-personne" id="label-personne">Personne *</label>
+                    <select id="popup-personne" required>
+                        <option value="">-- Choisir --</option>
+                    </select>
+                </div>
+
+                <div id="groupe-date" class="form-group" style="display: none;">
+                    <label for="popup-date-retour">Date de retour prévue</label>
+                    <input type="date" id="popup-date-retour">
+                </div>
+
+                <div class="popup-buttons">
+                    <button type="button" class="btn btn-secondary" id="btn-annuler-etat">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POPUP DÉTAILS PERSONNE -->
+    <div id="popup-personne-details" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <button class="popup-close" id="popup-personne-close">×</button>
+            <h2>Détails de la personne</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Nom complet :</label>
+                    <span id="personne-nom"></span>
+                </div>
+                <div class="info-item">
+                    <label>Email :</label>
+                    <span id="personne-email"></span>
+                </div>
+                <div class="info-item">
+                    <label>Rôle :</label>
+                    <span id="personne-role"></span>
+                </div>
+            </div>
+
+            <div class="popup-buttons">
+                <button type="button" class="btn btn-secondary" id="btn-fermer-personne">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP CONFIRMATION -->
+    <div id="popup-confirmation" class="popup-overlay popup-confirmation" style="display: none;">
+        <div class="popup-content">
+            <div class="popup-icon warning">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <h2 id="confirmation-titre">Confirmer la suppression</h2>
+            <p id="confirmation-message">Êtes-vous sûr de vouloir supprimer cet élément ?</p>
+            <div class="popup-buttons">
+                <button type="button" class="btn btn-secondary" id="btn-confirmation-annuler">
+                    Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="btn-confirmation-valider">
+                    <i data-lucide="trash-2"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP MODIFIER MATÉRIEL -->
+    <div id="popup-modifier" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <button class="popup-close" id="popup-modifier-close">×</button>
+            <h2>Modifier le matériel</h2>
+
+            <form id="form-modifier-materiel">
+                <div class="form-group">
+                    <label for="modifier-nom">Nom du matériel *</label>
+                    <input type="text" id="modifier-nom" required placeholder="Ex: Arduino Uno">
+                </div>
+
+                <div class="form-group">
+                    <label for="modifier-categorie">Catégorie</label>
+                    <input type="text" id="modifier-categorie" placeholder="Ex: Électronique">
+                </div>
+
+                <div class="form-group">
+                    <label for="modifier-localisation">Localisation</label>
+                    <input type="text" id="modifier-localisation" placeholder="Ex: Salle B-04, Armoire 3">
+                </div>
+
+                <div class="form-group">
+                    <label for="modifier-description">Référence</label>
+                    <input type="text" id="modifier-description" placeholder="Ex: REF-2024-001">
+                </div>
+
+                <div class="popup-buttons">
+                    <button type="button" class="btn btn-secondary" id="btn-annuler-modifier">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save"></i>
+                        Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- POPUP MODIFIER RÔLE -->
+    <div id="popup-role" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <button class="popup-close" id="popup-role-close">×</button>
+            <h2>Modifier le rôle</h2>
+            <p id="popup-role-user-name" class="text-muted"></p>
+
+            <form id="form-modifier-role">
+                <div class="form-group">
+                    <label for="popup-role-select">Nouveau rôle *</label>
+                    <select id="popup-role-select" required>
+                        <option value="eleve">Élève</option>
+                        <option value="enseignant">Enseignant</option>
+                        <option value="technicien">Technicien</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+
+                <div class="popup-buttons">
+                    <button type="button" class="btn btn-secondary" id="btn-annuler-role">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/admin.js"></script>
+    <script>
+        // Initialiser les icônes Lucide
+        lucide.createIcons();
+    </script>
+</body>
+</html>

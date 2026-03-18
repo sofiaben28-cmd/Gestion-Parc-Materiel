@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Espace - Gestion Matériel IUT GEII</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="layout-sidebar">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <i data-lucide="box"></i>
+                    </div>
+                    <div class="sidebar-logo-text">
+                        <h1>IUT Lyon 1</h1>
+                        <span>Gestion Matériel</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Menu</div>
+                    <a class="nav-link active" data-tab="emprunts">
+                        <i data-lucide="package"></i>
+                        <span>Mes Emprunts</span>
+                    </a>
+                    <a class="nav-link" data-tab="catalogue">
+                        <i data-lucide="search"></i>
+                        <span>Catalogue</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="user-nom">Utilisateur</div>
+                        <div class="user-role" id="user-role">Étudiant</div>
+                    </div>
+                </div>
+
+                <div class="theme-toggle" id="theme-toggle">
+                    <span class="theme-toggle-icon">
+                        <i data-lucide="moon"></i>
+                    </span>
+                    <span class="theme-toggle-text">Mode sombre</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="theme-switch">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <button class="btn-logout" id="btn-deconnexion">
+                    <i data-lucide="log-out"></i>
+                    <span>Déconnexion</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- OVERLAY MOBILE -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- CONTENU PRINCIPAL -->
+        <div class="main-wrapper">
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="header-title">
+                        <button class="btn-menu-mobile" id="btn-menu-mobile">
+                            <i data-lucide="menu"></i>
+                        </button>
+                        <h1 id="page-title">Mes Emprunts</h1>
+                        <p id="page-subtitle">Gérez vos emprunts de matériel</p>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <!-- ONGLET MES EMPRUNTS -->
+                <div id="tab-emprunts" class="tab-content active">
+                    <!-- EMPRUNTS EN COURS -->
+                    <div class="card">
+                        <h2>Emprunts en cours</h2>
+                        <table id="table-emprunts-cours">
+                            <thead>
+                                <tr>
+                                    <th>Matériel</th>
+                                    <th>Catégorie</th>
+                                    <th>Date emprunt</th>
+                                    <th>Retour prévu</th>
+                                    <th>Jours restants</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="msg-aucun-emprunt" class="text-muted" style="display: none;">
+                            Vous n'avez aucun emprunt en cours
+                        </p>
+                    </div>
+
+                    <!-- HISTORIQUE -->
+                    <div class="card">
+                        <h2>Historique des emprunts</h2>
+                        <table id="table-emprunts-historique">
+                            <thead>
+                                <tr>
+                                    <th>Matériel</th>
+                                    <th>Catégorie</th>
+                                    <th>Date emprunt</th>
+                                    <th>Date retour</th>
+                                    <th>Durée</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="msg-aucun-historique" class="text-muted" style="display: none;">
+                            Aucun historique d'emprunt
+                        </p>
+                    </div>
+
+                    <!-- RETARDS -->
+                    <div class="card card-danger">
+                        <h2>Mes retards</h2>
+                        <table id="table-emprunts-retards">
+                            <thead>
+                                <tr>
+                                    <th>Matériel</th>
+                                    <th>Catégorie</th>
+                                    <th>Retour prévu</th>
+                                    <th>Retour effectif</th>
+                                    <th>Jours de retard</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="msg-aucun-retard" class="text-muted" style="display: none;">
+                            Aucun retard
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ONGLET CATALOGUE -->
+                <div id="tab-catalogue" class="tab-content">
+                    <div class="card">
+                        <h2>Matériel disponible</h2>
+
+                        <!-- Barre de recherche -->
+                        <div class="table-toolbar">
+                            <div class="search-wrapper">
+                                <i data-lucide="search" class="search-icon"></i>
+                                <input type="text" id="search-catalogue" placeholder="Rechercher un matériel...">
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-categorie">Catégorie :</label>
+                                <select id="filter-categorie">
+                                    <option value="">Toutes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <table id="table-catalogue">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Catégorie</th>
+                                    <th>Localisation</th>
+                                    <th>État</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <p id="msg-aucun-catalogue" class="text-muted" style="display: none;">
+                            Aucun matériel trouvé
+                        </p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/user.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
